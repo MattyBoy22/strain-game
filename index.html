@@ -1,30 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8" /><title>Strain Simple Test</title></head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Strain - Word Chain Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #splash {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    #splash h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    #splash p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      max-width: 300px;
+      text-align: center;
+    }
+    #splash button {
+      padding: 0.75rem 2rem;
+      font-size: 1.2rem;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      z-index: 1;
+    }
+    input {
+      padding: 0.5rem;
+      width: 100%;
+      margin-top: 1rem;
+      font-size: 1rem;
+    }
+    button.submit-btn {
+      margin-top: 1rem;
+      padding: 0.5rem;
+      width: 100%;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      border-radius: 4px;
+    }
+    button#shareButton {
+      display: none;
+      background: #007bff;
+      margin-top: 1rem;
+      border-radius: 4px;
+    }
+    ul {
+      margin-top: 1rem;
+      list-style: none;
+      padding: 0;
+      font-size: 1.1rem;
+    }
+    li {
+      padding: 0.25rem 0;
+    }
+    #message {
+      min-height: 1.5em;
+      margin-top: 1rem;
+      font-weight: 600;
+      color: #333;
+    }
+    /* Confetti styles */
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background-color: #f94144;
+      opacity: 0.9;
+      pointer-events: none;
+      z-index: 9999;
+      will-change: transform;
+      animation-name: confetti-fall;
+      animation-timing-function: linear;
+      animation-iteration-count: 1;
+    }
+    @keyframes confetti-fall {
+      0% {transform: translateY(0) rotate(0deg);}
+      100% {transform: translateY(100vh) rotate(360deg);}
+    }
+  </style>
+</head>
 <body>
-  <h2>Strain Test</h2>
-  <p>Start: <span id="startWord">cold</span></p>
-  <p>End: <span id="endWord">warm</span></p>
-  <input id="guessInput" placeholder="Enter next word" />
-  <button onclick="submitGuess()">Submit</button>
-  <ul id="chainList"><li>cold</li></ul>
-  <p id="message"></p>
+
+  <div id="splash">
+    <h1>Strain</h1>
+    <p>Connect the start word to the end word by changing one letter at a time. Each intermediate word must be a real English word.</p>
+    <button onclick="startGame()">Start Playing</button>
+  </div>
+
+  <div class="container" style="display:none;">
+    <p><strong>Start:</strong> <span id="startWord"></span></p>
+    <p><strong>End:</strong> <span id="endWord"></span></p>
+    <input type="text" id="guessInput" placeholder="Enter next word" autocomplete="off" />
+    <button class="submit-btn" onclick="submitGuess()">Submit</button>
+    <ul id="chainList"></ul>
+    <p id="message"></p>
+    <button id="shareButton" onclick="shareResult()">Share Result</button>
+  </div>
 
   <script>
-    const startWord = "cold";
-    const endWord = "warm";
-    const chain = [startWord];
-    const guessInput = document.getElementById('guessInput');
-    const chainList = document.getElementById('chainList');
-    const message = document.getElementById('message');
+    // === Daily puzzles list (pairs of [start, end]) - all 4-letter words ===
+    const dailyPuzzles = [
+      ["cold", "warm"],
+      ["hard", "soft"],
+      ["head", "tail"],
+      ["love", "hate"],
+      ["fast", "slow"],
+      ["dark", "light"],
+      ["moon", "star"],
+      ["rain", "snow"],
+      ["tree", "leaf"],
+      ["fire", "cold"],
+      ["blue", "gold"],
+      ["rock", "roll"],
+      ["life", "death"],
+      ["road", "path"],
+      ["hope", "fear"],
+      ["game", "play"],
+      ["time", "zone"],
+      ["mind", "body"],
+      ["city", "town"],
+      ["work", "rest"]
+    ];
 
-    function isOneLetterDifferent(w1, w2) {
-      if(w1.length !== w2.length) return false;
-      let diff=0;
-      for(let i=0; i<w1.length; i++) if(w1[i]!==w2[i]) diff++;
-      return diff===1;
+    // Get today's puzzle based on date (cycle every 20 days)
+    function getTodaysPuzzle() {
+      const day = new Date().getDate();
+      return dailyPuzzles[day % dailyPuzzles.length];
     }
 
+    // Game state
+    let startWord, endWord;
+    let chain = [];
+    let gameStarted = false;
+
+    // Elements
+    const splash = document.getElementById("splash");
+    const container = document.querySelector(".container");
+    const startWordElem = document.getElementById("startWord");
+    const endWordElem = document.getElementById("endWord");
+    const guessInput = document.getElementById("guessInput");
+    const chainList = document.getElementById("chainList");
+    const message = document.getElementById("message");
+    const shareButton = document.getElementById("shareButton");
+
+    // Start the game
+    function startGame() {
+      [startWord, endWord] = getTodaysPuzzle();
+      chain = [startWord];
+      gameStarted = true;
+      splash.style.display = "none";
+      container.style.display = "block";
+      startWordElem.textContent = startWord;
+      endWordElem.textContent = endWord;
+      chainList.innerHTML = `<li>${startWord}</li>`;
+      message.textContent = "";
+      shareButton.style.display = "none";
+      guessInput.value = "";
+      guessInput.focus();
+    }
+
+    // Check if two words differ by exactly one letter
+    function isOneLetterDifferent(word1, word2) {
+      if (word1.length !== word2.length) return false;
+      let diff = 0;
+      for (let i = 0; i < word1.length; i++) {
+        if (word1[i] !== word2[i]) diff++;
+      }
+      return diff === 1;
+    }
+
+    // Check if a word is valid English word using dictionary API
     async function isValidWord(word) {
       try {
         const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
@@ -34,36 +213,92 @@
       }
     }
 
+    // Confetti animation on win
+    function confettiBurst() {
+      const colors = ['#f94144','#f3722c','#f8961e','#f9c74f','#90be6d','#43aa8b','#577590'];
+      for(let i=0; i<150; i++){
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.left = Math.random() * window.innerWidth + 'px';
+        confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        confetti.style.transform = `rotate(${Math.random()*360}deg)`;
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 5000);
+      }
+    }
+
+    // Submit a guess
     async function submitGuess() {
+      if (!gameStarted) return;
+
       const guess = guessInput.value.trim().toLowerCase();
       const lastWord = chain[chain.length - 1];
-      if(!guess || guess.length !== startWord.length){
-        message.textContent = "Guess must be 4 letters.";
+
+      if (!guess || guess.length !== startWord.length) {
+        message.textContent = `Guess must be a ${startWord.length}-letter word.`;
         return;
       }
-      if(!isOneLetterDifferent(lastWord, guess)){
-        message.textContent = "Word must differ by one letter.";
+
+      if (!isOneLetterDifferent(lastWord, guess)) {
+        message.textContent = "Word must differ by exactly one letter from the previous.";
         return;
       }
-      if(chain.includes(guess)){
-        message.textContent = "Word already used.";
+
+      if (chain.includes(guess)) {
+        message.textContent = "You already used that word.";
         return;
       }
-      message.textContent = "Checking...";
+
+      message.textContent = "Checking word validity...";
       const valid = await isValidWord(guess);
-      if(!valid){
-        message.textContent = "Invalid English word.";
+
+      if (!valid) {
+        message.textContent = "Not a valid English word.";
         return;
       }
+
       chain.push(guess);
       chainList.innerHTML += `<li>${guess}</li>`;
       guessInput.value = "";
       guessInput.focus();
-      if(guess === endWord){
-        message.textContent = `You solved it in ${chain.length-1} moves!`;
+
+      if (guess === endWord) {
+        message.textContent = `🎉 You solved it in ${chain.length - 1} moves!`;
+        shareButton.style.display = "block";
+        confettiBurst();
+
+        // Save streak in localStorage
+        const lastWinDate = localStorage.getItem('strain-last-win-date');
+        const streak = parseInt(localStorage.getItem('strain-streak') || '0');
+        const todayStr = new Date().toDateString();
+
+        if (lastWinDate === todayStr) {
+          // already won today, do nothing
+        } else {
+          // Check if yesterday was last win
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          if (lastWinDate === yesterday.toDateString()) {
+            localStorage.setItem('strain-streak', streak + 1);
+          } else {
+            localStorage.setItem('strain-streak', 1);
+          }
+          localStorage.setItem('strain-last-win-date', todayStr);
+        }
+
       } else {
         message.textContent = "Keep going...";
       }
+    }
+
+    // Share result to clipboard
+    function shareResult() {
+      const moves = chain.length - 1;
+      const result = `I solved today’s #Strain in ${moves} moves!\n` + chain.join(" → ");
+      navigator.clipboard.writeText(result).then(() => {
+        alert("Result copied to clipboard! Share it with friends.");
+      });
     }
   </script>
 </body>
