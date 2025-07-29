@@ -1,567 +1,232 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Strain - Word Chain Game</title>
-  <style>
-    /* Reset & base */
-    body 
-    
-</script>
-{
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: background 0.3s, color 0.3s;
-    }
-    :root {
-      --bg-light: #f4f4f4;
-      --text-light: #222;
-      --bg-dark: #121212;
-      --text-dark: #eee;
-      --primary: #007bff;
-      --primary-dark: #3399ff;
-    }
-    body.light {
-      --bg: var(--bg-light);
-      --text: var(--text-light);
-    }
-    body.dark {
-      --bg: var(--bg-dark);
-      --text: var(--text-dark);
-    }
-
-    header {
-      width: 100%;
-      background: var(--primary);
-      color: white;
-      text-align: center;
-      padding: 1rem 0;
-      font-weight: 700;
-      font-size: 1.75rem;
-      letter-spacing: 2px;
-      user-select: none;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    }
-
-    #darkModeToggle {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      background: var(--primary);
-      border: none;
-      border-radius: 20px;
-      padding: 0.25rem 0.75rem;
-      color: white;
-      font-weight: 700;
-      cursor: pointer;
-      user-select: none;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      transition: background 0.3s;
-      z-index: 30;
-    }
-    #darkModeToggle:hover {
-      background: var(--primary-dark);
-    }
-
-    #splash {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 20;
-      padding: 2rem;
-      text-align: center;
-    }
-    #splash h1 {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-    #splash p {
-      font-size: 1.3rem;
-      margin-bottom: 2rem;
-      max-width: 350px;
-      line-height: 1.4;
-    }
-    #splash button {
-      background: var(--primary);
-      border: none;
-      color: white;
-      font-size: 1.25rem;
-      padding: 0.75rem 2.5rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.25s;
-    }
-    #splash button:hover {
-      background: var(--primary-dark);
-    }
-
-    .container {
-      background: var(--bg);
-      max-width: 420px;
-      width: 90%;
-      margin: 1rem auto 3rem;
-      padding: 1.5rem 2rem 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-      text-align: center;
-      color: var(--text);
-      user-select: none;
-      position: relative;
-      z-index: 10;
-    }
-
-    /* Directions box */
-    #directions {
-      background: var(--primary);
-      color: white;
-      padding: 1rem 1.5rem;
-      border-radius: 10px;
-      margin-bottom: 1rem;
-      font-size: 0.95rem;
-      line-height: 1.4;
-      text-align: left;
-      user-select: none;
-    }
-    #directions strong {
-      font-weight: 700;
-    }
-
-    p, label {
-      font-weight: 600;
-      margin: 0.25rem 0 0.75rem;
-    }
-    input {
-      font-size: 1rem;
-      padding: 0.5rem 0.75rem;
-      width: 100%;
-      border: 2px solid #ccc;
-      border-radius: 6px;
-      outline-offset: 2px;
-      transition: border-color 0.3s;
-      color: var(--text);
-      background: var(--bg);
-      user-select: text;
-    }
-    input:focus {
-      border-color: var(--primary);
-      outline: none;
-    }
-    button.submit-btn {
-      margin-top: 1rem;
-      padding: 0.6rem;
-      width: 100%;
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-size: 1.1rem;
-      border-radius: 8px;
-      font-weight: 600;
-      user-select: none;
-      transition: background 0.3s;
-    }
-    button.submit-btn:hover:not(:disabled) {
-      background-color: var(--primary-dark);
-    }
-    button.submit-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    button#shareButton {
-      display: none;
-      background: var(--primary);
-      margin-top: 1rem;
-      border-radius: 6px;
-      font-weight: 600;
-      padding: 0.6rem;
-      width: 100%;
-      cursor: pointer;
-      user-select: none;
-      transition: background 0.3s;
-    }
-    button#shareButton:hover {
-      background: var(--primary-dark);
-    }
-
-    ul#chainList {
-      margin-top: 1rem;
-      list-style: none;
-      padding: 0;
-      font-size: 1.2rem;
-      line-height: 1.5;
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background: var(--bg);
-    }
-    ul#chainList li {
-      padding: 0.3rem 1rem;
-      border-bottom: 1px solid #eee;
-      user-select: text;
-    }
-    ul#chainList li:last-child {
-      border-bottom: none;
-    }
-    #message {
-      min-height: 1.5em;
-      margin-top: 1rem;
-      font-weight: 700;
-      color: var(--text);
-      user-select: none;
-    }
-
-    #timer, #streak, #leaderboardTitle {
-      margin: 1rem 0 0.5rem;
-      font-weight: 600;
-    }
-
-    #leaderboard {
-      margin-top: 0.25rem;
-      background: var(--bg);
-      border-radius: 8px;
-      padding: 0.5rem 1rem;
-      font-size: 0.9rem;
-      max-width: 420px;
-      width: 90%;
-      color: var(--text);
-      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
-      user-select: none;
-    }
-    #leaderboard ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    #leaderboard li {
-      border-bottom: 1px solid #ccc;
-      padding: 0.3rem 0;
-    }
-    #leaderboard li:last-child {
-      border-bottom: none;
-    }
-
-    footer {
-      margin-top: auto;
-      padding: 1rem 0;
-      font-size: 0.85rem;
-      color: var(--text);
-      user-select: none;
-    }
-
-    /* Confetti styles */
-    .confetti {
-      position: fixed;
-      width: 10px;
-      height: 10px;
-      background-color: #f94144;
-      opacity: 0.9;
-      pointer-events: none;
-      z-index: 9999;
-      will-change: transform;
-      animation-name: confetti-fall;
-      animation-timing-function: linear;
-      animation-iteration-count: 1;
-    }
-    @keyframes confetti-fall {
-      0% {transform: translateY(0) rotate(0deg);}
-      100% {transform: translateY(100vh) rotate(360deg);}
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>🧠 Strain Game</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 1rem; }
+  input, button { font-size: 1rem; padding: 0.5rem; margin: 0.3rem 0; }
+  #usernameInput { width: 100%; max-width: 300px; }
+  #wordInput { width: 100%; max-width: 200px; }
+  #wordList { margin-top: 1rem; padding-left: 20px; }
+  #yesterdaySection { margin-top: 2rem; border-top: 1px solid #ccc; padding-top: 1rem; }
+</style>
 </head>
-<body class="light">
+<body>
 
-<header>Strain</header>
+<h1>🧠 Strain Game</h1>
 
-<button id="darkModeToggle" title="Toggle Dark Mode">🌙</button>
+<label for="usernameInput">Enter your name:</label>
+<input type="text" id="usernameInput" placeholder="Your name" maxlength="20" />
 
-<div id="splash">
-  <h1>Strain</h1>
-  <p>Connect the start word to the end word by changing one letter at a time.<br />Each intermediate word must be a real English word.</p>
-  <button onclick="startGame()">Start Playing</button>
+<div id="game">
+  <!-- Game UI will be loaded here -->
 </div>
 
-<div class="container" style="display:none;">
-<div id="auth-section">
-  <div id="user-info" style="display: none;">
-    Logged in as: <span id="username"></span>
-    <button id="logoutBtn">Logout</button>
-  </div>
-  <div id="login-section">
-    <input type="text" id="nickname" placeholder="Enter a nickname" />
-    <button id="loginBtn">Login Anonymously</button>
-  </div>
+<div id="controls" style="margin-top: 1rem;">
+  <button onclick="loadGame()">🔁 Restart</button>
+  <button onclick="loadYesterday()">📅 Yesterday's Puzzle</button>
+  <button onclick="showLeaderboard()">🏆 Leaderboard</button>
+  <button onclick="generateChallengeLink()">🎯 Challenge a Friend</button>
 </div>
 
-  <div id="directions">
-    <strong>How to Play:</strong>
-    <ul style="margin:0; padding-left: 1.2rem;">
-      <li>Start with the given <em>Start</em> word and try to reach the <em>End</em> word.</li>
-      <li>Change only one letter at a time to form a new valid English word.</li>
-      <li>Each word must be different from all previous words in the chain.</li>
-    </ul>
-    <strong>Example:</strong>
-    <p><em>cold → cord → card → ward → warm</em></p>
-  </div>
-
-  <p><strong>Start:</strong> <span id="startWord"></span></p>
-  <p><strong>End:</strong> <span id="endWord"></span></p>
-  <p id="timer">Time: 0s</p>
-  <p id="streak">Current Streak: 0</p>
-  <input type="text" id="guessInput" placeholder="Enter next word" autocomplete="off" />
-  <button class="submit-btn" onclick="submitGuess()">Submit</button>
-  <ul id="chainList"></ul>
-  <p id="message"></p>
-  <button id="shareButton" onclick="shareResult()">Share Result</button>
+<div id="yesterdaySection">
+  <h3>Yesterday's Puzzle</h3>
+  <div id="yesterdayInfo">Loading...</div>
+  <button id="loadYesterdayBtn">Load Yesterday's Game</button>
 </div>
 
-<div id="leaderboard">
-  <h3 id="leaderboardTitle">Leaderboard (Best Times & Streaks)</h3>
-  <ul id="leaderboardList"></ul>
-</div>
-
-<footer>Created by MattyBoy22</footer>
+<textarea id="share-output" readonly rows="4" style="width:100%; margin-top:1rem;"></textarea>
+<button onclick="copyToClipboard(document.getElementById('share-output').value)">📤 Copy Shareable Result</button>
 
 <script>
-  const dailyPuzzles = [
-    ["cold", "warm"],
-    ["hard", "soft"],
-    ["head", "tail"],
-    ["love", "hate"],
-    ["fast", "slow"],
-    ["dark", "light"],
-    ["moon", "star"],
-    ["rain", "snow"],
-    ["tree", "leaf"],
-    ["fire", "cold"],
-    ["blue", "gold"],
-    ["rock", "roll"],
-    ["life", "death"],
-    ["road", "path"],
-    ["hope", "fear"],
-    ["game", "play"],
-    ["time", "zone"],
-    ["mind", "body"],
-    ["city", "town"],
-    ["work", "rest"]
-  ];
+// --- Utilities ---
 
-  const splash = document.getElementById("splash");
-  const container = document.querySelector(".container");
-  const startWordElem = document.getElementById("startWord");
-  const endWordElem = document.getElementById("endWord");
-  const guessInput = document.getElementById("guessInput");
-  const chainList = document.getElementById("chainList");
-  const message = document.getElementById("message");
-  const shareButton = document.getElementById("shareButton");
-  const timerElem = document.getElementById("timer");
-  const streakElem = document.getElementById("streak");
-  const leaderboardList = document.getElementById("leaderboardList");
-  const darkModeToggle = document.getElementById("darkModeToggle");
+function getTodayDateKey(offset = 0) {
+  const today = new Date();
+  today.setDate(today.getDate() + offset);
+  return today.toISOString().split("T")[0];
+}
 
-  let startWord, endWord;
-  let chain = [];
-  let gameStarted = false;
-  let timerInterval;
-  let secondsElapsed = 0;
+function saveGameResult(dateKey, result) {
+  localStorage.setItem(`result-${dateKey}`, JSON.stringify(result));
+}
 
-  function getTodaysPuzzle() {
-    const day = new Date().getDate();
-    return dailyPuzzles[day % dailyPuzzles.length];
+function getGameResult(dateKey) {
+  return JSON.parse(localStorage.getItem(`result-${dateKey}`));
+}
+
+function updateStreak() {
+  const today = getTodayDateKey();
+  const yesterday = getTodayDateKey(-1);
+  const yesterdayResult = getGameResult(yesterday);
+  let streak = parseInt(localStorage.getItem("streak") || "0");
+
+  if (yesterdayResult && !getGameResult(today)) {
+    streak++;
+  } else if (!yesterdayResult) {
+    streak = 1;
   }
+  localStorage.setItem("streak", streak);
+  // Optionally update streak display if added to UI
+}
 
-  function startTimer() {
-    secondsElapsed = 0;
-    timerElem.textContent = `Time: 0s`;
-    timerInterval = setInterval(() => {
-      secondsElapsed++;
-      timerElem.textContent = `Time: ${secondsElapsed}s`;
-    }, 1000);
+function addLeaderboardEntry(name, guesses, time) {
+  const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+  leaderboard.push({ name, guesses, time });
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+}
+
+function showLeaderboard() {
+  const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+  if (leaderboard.length === 0) {
+    alert("No leaderboard entries yet.");
+    return;
   }
-  function stopTimer() {
-    clearInterval(timerInterval);
-  }
+  leaderboard.sort((a, b) => a.time - b.time);
+  const list = leaderboard.map(e => `${e.name}: ${e.guesses} guesses, ${e.time}s`).join("\n");
+  alert("🏆 Leaderboard:\n" + list);
+}
 
-  function toggleDarkMode() {
-    if(document.body.classList.contains('light')){
-      document.body.classList.replace('light', 'dark');
-      darkModeToggle.textContent = '☀️';
-      localStorage.setItem('strain-dark-mode', 'dark');
-    } else {
-      document.body.classList.replace('dark', 'light');
-      darkModeToggle.textContent = '🌙';
-      localStorage.setItem('strain-dark-mode', 'light');
-    }
-  }
-  darkModeToggle.onclick = toggleDarkMode;
+function generateShareText(result) {
+  const emojiMap = ["⬛️", "🟨", "🟩"];
+  const lines = result.path.map(word => {
+    return word.split("").map(() => emojiMap[Math.floor(Math.random() * 3)]).join("");
+  });
+  lines.push(`🎉 Solved in ${result.path.length} guesses!`);
+  lines.push("Play: https://MattyBoy22.github.io/strain-game/");
+  return lines.join("\n");
+}
 
-  const savedMode = localStorage.getItem('strain-dark-mode');
-  if(savedMode === 'dark'){
-    document.body.classList.replace('light', 'dark');
-    darkModeToggle.textContent = '☀️';
-  }
+function copyToClipboard(text) {
+  if (!text) return alert("Nothing to copy!");
+  navigator.clipboard.writeText(text);
+  alert("📋 Result copied to clipboard!");
+}
 
-  function startGame() {
-    [startWord, endWord] = getTodaysPuzzle();
-    chain = [startWord];
-    gameStarted = true;
-    splash.style.display = "none";
-    container.style.display = "block";
-    startWordElem.textContent = startWord;
-    endWordElem.textContent = endWord;
-    chainList.innerHTML = `<li>${startWord}</li>`;
-    message.textContent = "";
-    shareButton.style.display = "none";
-    guessInput.value = "";
-    guessInput.focus();
-    startTimer();
-    updateStreakDisplay();
-    loadLeaderboard();
-  }
+// --- Game logic ---
 
-  function isOneLetterDifferent(word1, word2) {
-    if (word1.length !== word2.length) return false;
-    let diff = 0;
-    for (let i = 0; i < word1.length; i++) {
-      if (word1[i] !== word2[i]) diff++;
-    }
-    return diff === 1;
-  }
+const usernameInput = document.getElementById("usernameInput");
+let playerName = localStorage.getItem("playerName") || "";
+usernameInput.value = playerName;
 
-  async function isValidWord(word) {
-    try {
-      const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-      return res.ok;
-    } catch {
-      return false;
-    }
-  }
-
-  async function submitGuess() {
-    if(!gameStarted) return;
-    const guess = guessInput.value.trim().toLowerCase();
-    const lastWord = chain[chain.length - 1];
-
-    if (!guess || guess.length !== startWord.length) {
-      message.textContent = "Guess must be a 4-letter word.";
+usernameInput.addEventListener("keyup", (e) => {
+  if (e.key === "Enter") {
+    const name = usernameInput.value.trim();
+    if (name.length === 0) {
+      alert("Please enter a valid name");
       return;
     }
-
-    if (!isOneLetterDifferent(lastWord, guess)) {
-      message.textContent = "Word must differ by only one letter.";
-      return;
-    }
-
-    if (chain.includes(guess)) {
-      message.textContent = "You already used that word.";
-      return;
-    }
-
-    message.textContent = "Checking...";
-    guessInput.disabled = true;
-
-    const valid = await isValidWord(guess);
-
-    guessInput.disabled = false;
-    if (!valid) {
-      message.textContent = "Not a valid English word.";
-      return;
-    }
-
-    chain.push(guess);
-    chainList.innerHTML += `<li>${guess}</li>`;
-    guessInput.value = "";
-    guessInput.focus();
-
-    if (guess === endWord) {
-      stopTimer();
-      message.textContent = `You solved it in ${chain.length - 1} moves, time: ${secondsElapsed}s! 🎉`;
-      shareButton.style.display = "block";
-      saveResults(secondsElapsed);
-      runConfetti();
-    } else {
-      message.textContent = "Keep going...";
-    }
-  }
-
-  function shareResult() {
-    const moves = chain.length - 1;
-    const result = `I solved today’s #Strain in ${moves} moves and ${secondsElapsed}s!\n` + chain.join(" → ");
-    navigator.clipboard.writeText(result).then(() => {
-      alert("Result copied to clipboard! Share it with friends.");
-    });
-  }
-// Existing variables and functions...
-
-// Add this at the bottom inside <script>
-guessInput.addEventListener("keydown", function(event) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    submitGuess();
+    playerName = name;
+    localStorage.setItem("playerName", playerName);
+    alert(`Username set to: ${playerName}`);
   }
 });
 
-  // Streak & leaderboard functions
-  function updateStreakDisplay() {
-    const streak = parseInt(localStorage.getItem("strain-streak")) || 0;
-    streakElem.textContent = `Current Streak: ${streak}`;
+function loadPuzzle(dateKey = getTodayDateKey()) {
+  // Check for custom puzzle params here if needed
+
+  const wordPairs = [
+    ["stain", "brain"],
+    ["start", "crate"],
+    ["plant", "grape"],
+    ["sword", "stone"],
+    ["chair", "table"]
+  ];
+  const seed = new Date(dateKey).getDate() % wordPairs.length;
+  return { dateKey, start: wordPairs[seed][0], end: wordPairs[seed][1] };
+}
+
+function loadYesterday() {
+  loadGame(getTodayDateKey(-1));
+}
+
+function loadGame(dateKey = getTodayDateKey()) {
+  const puzzle = loadPuzzle(dateKey);
+  const gameEl = document.getElementById("game");
+  gameEl.innerHTML = `
+    <p>Transform <b>${puzzle.start}</b> → <b>${puzzle.end}</b> one letter at a time</p>
+    <input id='wordInput' maxlength="5" placeholder="Enter 5-letter word" />
+    <button onclick='submitWord()'>Submit</button>
+    <ul id='wordList'></ul>
+  `;
+
+  const inputEl = document.getElementById("wordInput");
+  inputEl.focus();
+  inputEl.addEventListener("keyup", function (e) {
+    if (e.key === "Enter") submitWord();
+  });
+
+  const path = [];
+  const start = puzzle.start;
+  const end = puzzle.end;
+
+  function isOneLetterDifferent(w1, w2) {
+    if (w1.length !== w2.length) return false;
+    let diff = 0;
+    for (let i = 0; i < w1.length; i++) if (w1[i] !== w2[i]) diff++;
+    return diff === 1;
   }
 
-  function saveResults(time) {
-    const streak = (parseInt(localStorage.getItem("strain-streak")) || 0) + 1;
-    localStorage.setItem("strain-streak", streak);
+  window.submitWord = function () {
+    const word = inputEl.value.trim().toLowerCase();
+    if (path.length === 0 && word !== start) return alert("Start with the first word: " + start);
+    if (!/^[a-zA-Z]{5}$/.test(word)) return alert("Word must be exactly 5 letters");
+    if (path.length > 0 && !isOneLetterDifferent(path[path.length - 1], word)) return alert("Change exactly one letter");
+    path.push(word);
+    const wordListEl = document.getElementById("wordList");
+    wordListEl.innerHTML += `<li>${word}</li>`;
+    inputEl.value = "";
+    inputEl.focus();
 
-    let leaderboard = JSON.parse(localStorage.getItem("strain-leaderboard") || "[]");
-    leaderboard.push({time, streak, date: new Date().toLocaleDateString()});
-    // Sort by time ascending then streak descending
-    leaderboard.sort((a,b) => a.time - b.time || b.streak - a.streak);
-    leaderboard = leaderboard.slice(0,10);
-    localStorage.setItem("strain-leaderboard", JSON.stringify(leaderboard));
-    updateStreakDisplay();
-    loadLeaderboard();
-  }
-
-  function loadLeaderboard() {
-    const leaderboard = JSON.parse(localStorage.getItem("strain-leaderboard") || "[]");
-    if(leaderboard.length === 0){
-      leaderboardList.innerHTML = "<li>No results yet. Play to get on the leaderboard!</li>";
-      return;
+    if (word === end) {
+      const result = { dateKey: puzzle.dateKey, path };
+      saveGameResult(puzzle.dateKey, result);
+      updateStreak();
+      addLeaderboardEntry(playerName || "Anonymous", path.length, path.length * 5);
+      document.getElementById("share-output").value = generateShareText(result);
+      alert("🎉 You solved it! Results ready to share.");
     }
-    leaderboardList.innerHTML = leaderboard.map((r,i) =>
-      `<li>#${i+1}: ${r.time}s | Streak: ${r.streak} | ${r.date}</li>`
-    ).join("");
-  }
+  };
 
-  // Confetti effect
-  function runConfetti() {
-    const colors = ['#f94144','#f3722c','#f9c74f','#90be6d','#43aa8b','#577590'];
-    const count = 150;
-    for(let i=0; i<count; i++){
-      const confetti = document.createElement('div');
-      confetti.classList.add('confetti');
-      confetti.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
-      confetti.style.left = Math.random()*100 + 'vw';
-      confetti.style.animationDuration = (Math.random()*2+3) + 's';
-      confetti.style.opacity = Math.random() + 0.7;
-      confetti.style.transform = `rotate(${Math.random()*360}deg)`;
-      document.body.appendChild(confetti);
-      setTimeout(() => confetti.remove(), 5000);
-    }
-  }
-</script>
+  updateStreak();
+}
 
+// Yesterday's Puzzle Section
+function displayYesterday() {
+  const yesterdayKey = getTodayDateKey(-1);
+  const yesterdayResult = getGameResult(yesterdayKey);
+  const yesterdayInfo = document.getElementById("yesterdayInfo");
+
+  if (!yesterdayResult) {
+    yesterdayInfo.textContent = "You did not play yesterday’s puzzle.";
+  } else {
+    yesterdayInfo.innerHTML = `
+      Puzzle Date: ${yesterdayKey}<br>
+      Guesses: ${yesterdayResult.path.length}<br>
+      Words: ${yesterdayResult.path.join(", ")}
+    `;
+  }
+}
+
+document.getElementById("loadYesterdayBtn").addEventListener("click", () => {
+  loadGame(getTodayDateKey(-1));
+});
+
+// Challenge link logic (from your existing code)
+function generateChallengeLink() {
+  const today = getTodayDateKey();
+  const url = new URL(window.location);
+  url.searchParams.set("date", today);
+  prompt("🔗 Share this challenge link:", url.toString());
+}
+
+// Init
+window.onload = () => {
+  displayYesterday();
+  loadGame();
+};
 </script>
 
 </body>
