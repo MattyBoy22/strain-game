@@ -2,18 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Strain - Word Chain Game</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f4f4f4;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #splash {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: white;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      height: 100vh;
-      margin: 0;
+      align-items: center;
+      z-index: 10;
+    }
+    #splash h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    #splash p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      max-width: 300px;
+      text-align: center;
+    }
+    #splash button {
+      padding: 0.75rem 2rem;
+      font-size: 1.2rem;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
     }
     .container {
       background: white;
@@ -23,13 +53,15 @@
       width: 90%;
       max-width: 400px;
       text-align: center;
+      z-index: 1;
     }
     input {
       padding: 0.5rem;
       width: 100%;
       margin-top: 1rem;
+      font-size: 1rem;
     }
-    button {
+    button.submit-btn {
       margin-top: 1rem;
       padding: 0.5rem;
       width: 100%;
@@ -38,110 +70,8 @@
       border: none;
       cursor: pointer;
       font-size: 1rem;
+      border-radius: 4px;
     }
-    ul {
-      margin-top: 1rem;
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      padding: 0.25rem 0;
-    }
-    #shareButton {
+    button#shareButton {
       display: none;
-      background: #007bff;
-      margin-top: 1rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2>Strain</h2>
-    <p><strong>Start:</strong> <span id="startWord">cold</span></p>
-    <p><strong>End:</strong> <span id="endWord">warm</span></p>
-    <input type="text" id="guessInput" placeholder="Enter next word" />
-    <button onclick="submitGuess()">Submit</button>
-    <ul id="chainList">
-      <li>cold</li>
-    </ul>
-    <p id="message"></p>
-    <button id="shareButton" onclick="shareResult()">Share Result</button>
-  </div>
-
-  <script>
-    const startWord = "cold";
-    const endWord = "warm";
-    const chain = [startWord];
-
-    async function isValidWord(word) {
-      try {
-        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-        return res.ok;
-      } catch (error) {
-        return false;
-      }
-    }
-
-    function isOneLetterDifferent(word1, word2) {
-      if (word1.length !== word2.length) return false;
-      let diff = 0;
-      for (let i = 0; i < word1.length; i++) {
-        if (word1[i] !== word2[i]) diff++;
-      }
-      return diff === 1;
-    }
-
-    async function submitGuess() {
-      const input = document.getElementById("guessInput");
-      const guess = input.value.trim().toLowerCase();
-      const lastWord = chain[chain.length - 1];
-      const message = document.getElementById("message");
-
-      if (!guess || guess.length !== startWord.length) {
-        message.textContent = "Guess must be a 4-letter word.";
-        return;
-      }
-
-      if (!isOneLetterDifferent(lastWord, guess)) {
-        message.textContent = "Word must differ by only one letter.";
-        return;
-      }
-
-      const valid = await isValidWord(guess);
-      if (!valid) {
-        message.textContent = "Not a valid English word.";
-        return;
-      }
-
-      if (chain.includes(guess)) {
-        message.textContent = "You already used that word.";
-        return;
-      }
-
-      chain.push(guess);
-      const chainList = document.getElementById("chainList");
-      const newLi = document.createElement("li");
-      newLi.textContent = guess;
-      chainList.appendChild(newLi);
-
-      if (guess === endWord) {
-        message.textContent = `You solved it in ${chain.length - 1} moves!`;
-        document.getElementById("shareButton").style.display = "block";
-        localStorage.setItem("strain-streak", (parseInt(localStorage.getItem("strain-streak")) || 0) + 1);
-      } else {
-        message.textContent = "Keep going...";
-      }
-
-      input.value = "";
-    }
-
-    function shareResult() {
-      const moves = chain.length - 1;
-      const result = `I solved today’s #Strain in ${moves} moves!\n` + chain.join(" → ");
-      navigator.clipboard.writeText(result).then(() => {
-        alert("Result copied to clipboard! Share it with friends.");
-      });
-    }
-  </script>
-</body>
-</html>
+      ba
