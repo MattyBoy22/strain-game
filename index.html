@@ -47,82 +47,20 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
 
-    #splash {
+    #darkModeToggle {
       position: fixed;
-      inset: 0;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 20;
-      padding: 2rem;
-      text-align: center;
-    }
-    #splash h1 {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-    #splash p {
-      font-size: 1.3rem;
-      margin-bottom: 2rem;
-      max-width: 350px;
-      line-height: 1.4;
-    }
-    #splash button {
+      top: 12px;
+      right: 12px;
       background: var(--primary);
       border: none;
+      border-radius: 20px;
+      padding: 0.25rem 0.75rem;
       color: white;
-      font-size: 1.25rem;
-      padding: 0.75rem 2.5rem;
-      border-radius: 6px;
+      font-weight: 700;
       cursor: pointer;
-      transition: background 0.25s;
-    }
-    #splash button:hover {
-      background: var(--primary-dark);
-    }
-
-    .container {
-      background: var(--bg);
-      max-width: 400px;
-      width: 90%;
-      margin: 1rem auto 3rem;
-      padding: 1.5rem 2rem 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-      text-align: center;
-      color: var(--text);
       user-select: none;
-      position: relative;
-      z-index: 10;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: background 0.3s;
+      z-index: 30;
     }
-
-    p, label {
-      font-weight: 600;
-      margin: 0.25rem 0 0.75rem;
-    }
-    input {
-      font-size: 1rem;
-      padding: 0.5rem 0.75rem;
-      width: 100%;
-      border: 2px solid #ccc;
-      border-radius: 6px;
-      outline-offset: 2px;
-      transition: border-color 0.3s;
-      color: var(--text);
-      background: var(--bg);
-      user-select: text;
-    }
-    input:focus {
-      border-color: var(--primary);
-      outline: none;
-    }
-    button.submit-btn {
-      margin-top: 1rem;
-      padding: 0.6rem;
-      width: 100%;
-      background-color: var(--primary);
-      color: white;
-      borde
+    #darkModeT
