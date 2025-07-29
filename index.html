@@ -490,6 +490,15 @@
       alert("Result copied to clipboard! Share it with friends.");
     });
   }
+// Existing variables and functions...
+
+// Add this at the bottom inside <script>
+guessInput.addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    submitGuess();
+  }
+});
 
   // Streak & leaderboard functions
   function updateStreakDisplay() {
