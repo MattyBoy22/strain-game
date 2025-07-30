@@ -260,29 +260,7 @@ function loadGame(dateKey = getTodayDateKey()) {
 
   updateStreak();
 }
-  let hintUsed = false;
-let hintPenalty = 3;
 
-document.getElementById('hint-btn').addEventListener('click', () => {
-  if (hintUsed) return;
-
-  // Assume solutionChain is an array like: ['cold', 'cord', 'card', 'ward', 'warm']
-  // and userChain is the current array of words the user has entered
-  const nextIndex = userChain.length;
-  const nextWord = solutionChain[nextIndex];
-
-  if (nextWord) {
-    document.getElementById('hint-output').innerText = `Hint: Try "${nextWord}" next.`;
-    hintUsed = true;
-    score -= hintPenalty;
-    updateScoreDisplay(); // Your existing function to update score on screen
-  }
-});
-let finalScore = score;
-if (hintUsed) {
-  finalScore -= hintPenalty;
-}
-// submitScore(finalScore);
 if (!confirm("Using a hint will deduct 3 points. Are you sure?")) return;
 
 
@@ -341,6 +319,33 @@ window.onload = () => {
       }
     });
   });
+</script>
+  <script>
+// Example integration spot
+let solutionChain = ["cold", "cord", "card", "ward", "warm"];
+let currentIndex = 0;
+let score = 10;
+let hintUsed = false;
+
+document.getElementById("submit-word").addEventListener("click", () => {
+  // Your existing submit logic...
+});
+
+document.getElementById("hint-btn").addEventListener("click", () => {
+  if (hintUsed) {
+    alert("You can only use one hint per game.");
+    return;
+  }
+  if (currentIndex + 1 < solutionChain.length) {
+    const nextWord = solutionChain[currentIndex + 1];
+    document.getElementById("hint-output").textContent = `Hint: ${nextWord}`;
+    currentIndex++;
+    document.getElementById("word-chain").innerHTML += `<li>${nextWord}</li>`;
+    score -= 3;
+    document.getElementById("score").textContent = score;
+    hintUsed = true;
+  }
+});
 </script>
 
 
