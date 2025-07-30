@@ -109,6 +109,15 @@
 <button onclick="copyToClipboard(document.getElementById('share-output').value)">📤 Copy Shareable Result</button>
 
 <script>
+  let hintUsed = false; // ← Move this to the top!
+
+function useHint() {
+  if (hintUsed) {
+    alert("You already used your one hint!");
+    return;
+  }
+
+  hintUsed = true;
 // --- Utilities ---
 
 function getTodayDateKey(offset = 0) {
@@ -277,11 +286,6 @@ function displayYesterday() {
     `;
   }
 }
-  function useHint() {
-  if (hintUsed) {
-    alert("You've already used your hint!");
-    return;
-  }
 
   const nextWord = wordChain[userWords.length];
   if (nextWord) {
@@ -292,7 +296,6 @@ function displayYesterday() {
   } else {
     alert("No more hints available.");
   }
-      let hintUsed = false;
 }
 
 document.getElementById("loadYesterdayBtn").addEventListener("click", () => {
