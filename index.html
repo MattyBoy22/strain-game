@@ -92,7 +92,7 @@
 </div>
 
 <div id="controls" style="margin-top: 1rem;">
-  <button onclick="hintbtn()">💡 Hint (-3 points)</button>
+  <button onclick="useHint()">💡 Hint (-3 points)</button>
   <button onclick="loadGame()">🔁 Restart</button>
   <button onclick="loadYesterday()">📅 Yesterday's Puzzle</button>
   <button onclick="showLeaderboard()">🏆 Leaderboard</button>
@@ -276,6 +276,23 @@ function displayYesterday() {
       Words: ${yesterdayResult.path.join(", ")}
     `;
   }
+}
+  function useHint() {
+  if (hintUsed) {
+    alert("You've already used your hint!");
+    return;
+  }
+
+  const nextWord = wordChain[userWords.length];
+  if (nextWord) {
+    userWords.push(nextWord);
+    updateWordChainDisplay();
+    updatePoints(-3);
+    hintUsed = true;
+  } else {
+    alert("No more hints available.");
+  }
+      let hintUsed = false;
 }
 
 document.getElementById("loadYesterdayBtn").addEventListener("click", () => {
