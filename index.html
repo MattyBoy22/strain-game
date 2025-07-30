@@ -2,266 +2,127 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🧠 Strain Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Strain Game</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 1rem; }
-    input, button { font-size: 1rem; padding: 0.5rem; margin: 0.3rem 0; }
-    #usernameInput { width: 100%; max-width: 300px; }
-    #wordInput { width: 100%; max-width: 200px; }
-    #wordList { margin-top: 1rem; padding-left: 20px; }
-    #yesterdaySection { margin-top: 2rem; border-top: 1px solid #ccc; padding-top: 1rem; }
-    .how-to-play-button {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      padding: 6px 12px;
-      font-size: 14px;
-      background-color: #444;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      z-index: 1000;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 999;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.7);
-    }
-    .modal-content {
-      background-color: #fff;
-      margin: 10% auto;
+    body {
+      font-family: Arial, sans-serif;
       padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 500px;
-      position: relative;
+      text-align: center;
     }
-    .close-button {
-      color: #aaa;
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 24px;
-      font-weight: bold;
-      cursor: pointer;
+    #game-container {
+      margin-top: 30px;
     }
-    .close-button:hover {
-      color: black;
+    input[type="text"] {
+      font-size: 18px;
+      padding: 8px;
+      width: 200px;
+    }
+    button {
+      font-size: 16px;
+      margin: 10px;
+      padding: 8px 16px;
+    }
+    #word-list {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    .correct {
+      color: green;
+    }
+    .hint-used {
+      color: orange;
     }
   </style>
 </head>
 <body>
+  <h1>Strain Game</h1>
 
-<h1>🧠 Strain Game</h1>
-
-<!-- How to Play Button and Modal -->
-<button id="howToPlayBtn" class="how-to-play-button">How to Play</button>
-<div id="howToPlayModal" class="modal">
-  <div class="modal-content">
-    <span class="close-button" id="closeHowToPlay">&times;</span>
-    <h2>How to Play</h2>
-    <ul>
-      <li>Start with the given <em>Start</em> word and try to reach the <em>End</em> word.</li>
-      <li>Change only one letter at a time to form a new valid English word.</li>
-      <li>Each word must be different from all previous words in the chain.</li>
-    </ul>
-    <strong>Example:</strong>
-    <p><em>cold → cord → card → ward → warm</em></p>
+  <div id="instructions">
+    <button onclick="toggleInstructions()">❓ How to Play</button>
+    <div id="instructions-text" style="display:none; text-align: left; margin: auto; width: 50%;">
+      <ul>
+        <li>Start with the given <em>Start</em> word and try to reach the <em>End</em> word.</li>
+        <li>Change only one letter at a time to form a new valid English word.</li>
+        <li>Each word must be different from all previous words in the chain.</li>
+      </ul>
+      <strong>Example:</strong>
+      <p><em>cold → cord → card → ward → warm</em></p>
+    </div>
   </div>
-</div>
 
-<label for="usernameInput">Enter your name:</label>
-<input type="text" id="usernameInput" placeholder="Your name" maxlength="20" />
+  <div id="game-container">
+    <p><strong>Start:</strong> <span id="start-word"></span></p>
+    <p><strong>End:</strong> <span id="end-word"></span></p>
 
-<div id="game"></div>
+    <input type="text" id="guess-input" placeholder="Enter next word" />
+    <button onclick="submitGuess()">Submit</button>
+    <button onclick="useHint()">💡 Hint (-3 points)</button>
 
-<div id="controls" style="margin-top: 1rem;">
-  <button onclick="useHint()">💡 Hint (-3 points)</button>
-  <button onclick="loadGame()">🔁 Restart</button>
-  <button onclick="loadYesterday()">📅 Yesterday's Puzzle</button>
-  <button onclick="showLeaderboard()">🏆 Leaderboard</button>
-  <button onclick="generateChallengeLink()">🎯 Challenge a Friend</button>
-</div>
+    <div id="word-list"></div>
+    <div id="score-display"></div>
+  </div>
 
-<div id="yesterdaySection">
-  <h3>Yesterday's Puzzle</h3>
-  <div id="yesterdayInfo">Loading...</div>
-  <button id="loadYesterdayBtn">Load Yesterday's Game</button>
-</div>
+  <script>
+    // Example word chain
+    const wordChain = ["cold", "cord", "card", "ward", "warm"];
+    let currentStep = 0;
+    let score = 10;
+    let hintUsed = false;
 
-<textarea id="share-output" readonly rows="4" style="width:100%; margin-top:1rem;"></textarea>
-<button onclick="copyToClipboard(document.getElementById('share-output').value)">📤 Copy Shareable Result</button>
+    // Initialize game
+    document.getElementById("start-word").textContent = wordChain[0];
+    document.getElementById("end-word").textContent = wordChain[wordChain.length - 1];
+    document.getElementById("word-list").innerHTML = `<p>${wordChain[0]}</p>`;
 
-<script>
-let hintUsed = false;
-let gamePath = [];
-let correctPath = [];
-
-function useHint() {
-  if (hintUsed) return alert("You already used your one hint!");
-
-  const nextWord = correctPath[gamePath.length];
-  if (nextWord) {
-    gamePath.push(nextWord);
-    document.getElementById("wordList").innerHTML += `<li>${nextWord} (hint)</li>`;
-    document.getElementById("wordInput").value = "";
-    hintUsed = true;
-    alert("Hint used! -3 points will be deducted.");
-  } else {
-    alert("No more hints available.");
-  }
-}
-
-// Utility
-function getTodayDateKey(offset = 0) {
-  const today = new Date();
-  today.setDate(today.getDate() + offset);
-  return today.toISOString().split("T")[0];
-}
-function saveGameResult(dateKey, result) {
-  localStorage.setItem(`result-${dateKey}`, JSON.stringify(result));
-}
-function getGameResult(dateKey) {
-  return JSON.parse(localStorage.getItem(`result-${dateKey}`));
-}
-function updateStreak() {
-  const today = getTodayDateKey();
-  const yesterday = getTodayDateKey(-1);
-  const yRes = getGameResult(yesterday);
-  let streak = parseInt(localStorage.getItem("streak") || "0");
-  streak = yRes ? streak + 1 : 1;
-  localStorage.setItem("streak", streak);
-}
-function addLeaderboardEntry(name, guesses, time) {
-  const lb = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-  lb.push({ name, guesses, time });
-  localStorage.setItem("leaderboard", JSON.stringify(lb));
-}
-function showLeaderboard() {
-  const lb = JSON.parse(localStorage.getItem("leaderboard") || "[]").sort((a,b)=>a.time-b.time);
-  alert("🏆 Leaderboard:\n" + lb.map(e => `${e.name}: ${e.guesses} guesses, ${e.time}s`).join("\n"));
-}
-function generateShareText(result) {
-  const lines = result.path.map(w => "🟩🟨⬛".charAt(Math.floor(Math.random()*3)).repeat(w.length));
-  lines.push(`🎉 Solved in ${result.path.length} guesses!`);
-  lines.push("Play: https://MattyBoy22.github.io/strain-game/");
-  return lines.join("\n");
-}
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text);
-  alert("📋 Result copied!");
-}
-
-// Game logic
-const usernameInput = document.getElementById("usernameInput");
-let playerName = localStorage.getItem("playerName") || "";
-usernameInput.value = playerName;
-usernameInput.addEventListener("keyup", (e) => {
-  if (e.key === "Enter") {
-    const name = usernameInput.value.trim();
-    if (name.length === 0) return alert("Please enter a valid name");
-    playerName = name;
-    localStorage.setItem("playerName", playerName);
-    alert(`Username set to: ${playerName}`);
-  }
-});
-
-function loadPuzzle(dateKey = getTodayDateKey()) {
-  const pairs = [["stain","brain"],["start","crate"],["plant","grape"],["sword","stone"],["chair","table"]];
-  const seed = new Date(dateKey).getDate() % pairs.length;
-  return { dateKey, start: pairs[seed][0], end: pairs[seed][1], solution: getExampleChain(pairs[seed][0], pairs[seed][1]) };
-}
-
-function getExampleChain(start, end) {
-  // Replace with real solver logic later
-  if (start === "stain" && end === "brain") return ["stain", "brain"];
-  if (start === "chair" && end === "table") return ["chair", "chain", "chile", "table"];
-  return [start, end]; // fallback dummy path
-}
-
-function loadGame(dateKey = getTodayDateKey()) {
-  hintUsed = false;
-  const puzzle = loadPuzzle(dateKey);
-  correctPath = puzzle.solution;
-  gamePath = [];
-
-  const gameEl = document.getElementById("game");
-  gameEl.innerHTML = `
-    <p>Transform <b>${puzzle.start}</b> → <b>${puzzle.end}</b> one letter at a time</p>
-    <input id='wordInput' maxlength="5" placeholder="Enter 5-letter word" />
-    <button onclick='submitWord()'>Submit</button>
-    <ul id='wordList'></ul>
-  `;
-
-  const inputEl = document.getElementById("wordInput");
-  inputEl.focus();
-  inputEl.addEventListener("keyup", e => { if (e.key === "Enter") submitWord(); });
-
-  window.submitWord = function () {
-    const word = inputEl.value.trim().toLowerCase();
-    if (!/^[a-z]{5}$/.test(word)) return alert("Word must be 5 letters");
-    if (gamePath.length === 0 && word !== puzzle.start) return alert("Start with: " + puzzle.start);
-    if (gamePath.includes(word)) return alert("No repeats!");
-    const prev = gamePath[gamePath.length - 1] || puzzle.start;
-    const diff = [...word].filter((c,i) => c !== prev[i]).length;
-    if (diff !== 1) return alert("Change exactly one letter");
-
-    gamePath.push(word);
-    document.getElementById("wordList").innerHTML += `<li>${word}</li>`;
-    inputEl.value = "";
-
-    if (word === puzzle.end) {
-      const result = { dateKey: puzzle.dateKey, path: gamePath };
-      saveGameResult(puzzle.dateKey, result);
-      updateStreak();
-      addLeaderboardEntry(playerName || "Anonymous", gamePath.length, gamePath.length * 5 + (hintUsed ? 3 : 0));
-      document.getElementById("share-output").value = generateShareText(result);
-      alert("🎉 You solved it!");
+    function toggleInstructions() {
+      const instructions = document.getElementById("instructions-text");
+      instructions.style.display = instructions.style.display === "none" ? "block" : "none";
     }
-  };
-}
 
-function loadYesterday() {
-  loadGame(getTodayDateKey(-1));
-}
-function displayYesterday() {
-  const key = getTodayDateKey(-1);
-  const res = getGameResult(key);
-  document.getElementById("yesterdayInfo").innerHTML = res
-    ? `Puzzle Date: ${key}<br>Guesses: ${res.path.length}<br>Words: ${res.path.join(", ")}`
-    : "You did not play yesterday’s puzzle.";
-}
-document.getElementById("loadYesterdayBtn").addEventListener("click", () => loadGame(getTodayDateKey(-1)));
+    function submitGuess() {
+      const input = document.getElementById("guess-input");
+      const guess = input.value.trim().toLowerCase();
+      input.value = "";
 
-function generateChallengeLink() {
-  const today = getTodayDateKey();
-  const url = new URL(window.location);
-  url.searchParams.set("date", today);
-  prompt("🔗 Share this challenge link:", url.toString());
-}
+      if (guess === wordChain[currentStep + 1]) {
+        currentStep++;
+        document.getElementById("word-list").innerHTML += `<p class="correct">${guess}</p>`;
+      } else {
+        document.getElementById("word-list").innerHTML += `<p style="color:red">${guess} (wrong)</p>`;
+      }
 
-window.onload = () => {
-  displayYesterday();
-  loadGame();
-};
+      if (currentStep === wordChain.length - 1) {
+        endGame();
+      }
+    }
 
-// Modal logic
-document.addEventListener("DOMContentLoaded", function () {
-  const modal = document.getElementById("howToPlayModal");
-  const btn = document.getElementById("howToPlayBtn");
-  const close = document.getElementById("closeHowToPlay");
-  btn.onclick = () => modal.style.display = "block";
-  close.onclick = () => modal.style.display = "none";
-  window.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
-});
-</script>
+    function useHint() {
+      if (hintUsed) {
+        alert("You can only use one hint per game!");
+        return;
+      }
+
+      const hintWord = wordChain[1]; // second word in chain
+      currentStep = 1;
+      score -= 3;
+      hintUsed = true;
+
+      const existingWords = document.getElementById("word-list").innerHTML;
+      document.getElementById("word-list").innerHTML = existingWords + `<p class="hint-used">${hintWord} (hint)</p>`;
+    }
+
+    function endGame() {
+      document.getElementById("score-display").innerHTML = `<h2>Game Complete!</h2><p>Your score: ${score}</p>`;
+      document.getElementById("guess-input").disabled = true;
+    }
+
+    // Allow pressing "Enter" to submit guess
+    document.getElementById("guess-input").addEventListener("keyup", function(event) {
+      if (event.key === "Enter") {
+        submitGuess();
+      }
+    });
+  </script>
 </body>
 </html>
